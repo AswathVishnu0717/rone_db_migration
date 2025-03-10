@@ -1,5 +1,5 @@
 import { sourceDb, targetDb } from "./db";
-import { ChargerPoint, Stations } from "./interfaces";
+import { ChargerPoint, StationAttachments, Stations } from "./interfaces";
 
 export async function migrateStations() {
   try {
@@ -13,13 +13,19 @@ export async function migrateStations() {
       country, pincode, landmark
       FROM public.stations_oltp;
     `;
+    const stationAttachmentQuery = `
+      SELECT id, url, file_name, station_id
+      FROM station_attachments_v2;
+    `;
 
     const { rows: stations } = await sourceDb.query<Stations>(sourceQuery);
+    const { rows: stationAttachments } = await sourceDb.query<StationAttachments>(stationAttachmentQuery);
 
-    console.log(`Fetched ${stations.length} records. Starting migration...`);
+    console.log(`Fetched ${stations.length} records and ${stationAttachments.length} attachments. Starting migration...`);
 
-    for (const station of stations) {
-      await targetDb.query(
+    // Migrate Stations
+    const insertPromises = stations.map(station => {
+      return targetDb.query(
         `INSERT INTO asset_db.station (
           id, name, latitude, longitude, address, street, area, city, state,
           country, pincode, landmark, agreement_type, what3words_location,
@@ -78,9 +84,29 @@ export async function migrateStations() {
           station.station_id_oltp
         ]
       );
-    }
+    });
+
+    await Promise.all(insertPromises);
+
+    // Migrate Attachments
+    const attachmentPromises = stationAttachments.map(attachment => {
+      return targetDb.query(
+        `INSERT INTO asset_db.station_attachments (
+          id, url, file_name, station_id
+        ) VALUES ($1, $2, $3, $4)`,
+        [
+          attachment.id,
+          attachment.url,
+          attachment.file_name,
+          attachment.station_id
+        ]
+      );
+    });
+
+    await Promise.all(attachmentPromises);
 
     console.log("Migration completed successfully.");
+
   } catch (error) {
     console.error("Migration failed:", error);
   } finally {

@@ -10,7 +10,7 @@ export async function migrateConnectors() {
     `;
 
     const { rows: connectors } = await sourceDb.query<Connectors>(sourceQuery);
-
+    // await targetDb.query('TRUNCATE TABLE asset_db.saev_connectors CASCADE');
     console.log(`Fetched ${connectors.length} records. Starting migration...`);
 
     for (const connector of connectors) {

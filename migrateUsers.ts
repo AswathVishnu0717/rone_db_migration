@@ -15,6 +15,10 @@ export async function migrateUsers() {
 
     console.log(`Fetched ${users.length} records. Starting migration...`);
 
+    // Truncate the target table before inserting
+    await targetDb.query('TRUNCATE TABLE user_db.users CASCADE');
+    console.log("Truncated existing records in target table");
+
     for (const user of users) {
       await targetDb.query(
         `INSERT INTO user_db.users (

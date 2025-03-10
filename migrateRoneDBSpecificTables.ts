@@ -26,6 +26,7 @@ const tables = [
   "connector_status",
   "closure_info",
   "alerts",
+  "master_chargers"
 ];
 
 // Check if pg_dump and psql exist
@@ -58,7 +59,7 @@ async function createTable(table: string) {
     const { rows: [{ create_table_ddl }] } = await sourceDb.query(`
       SELECT 'CREATE TABLE rone_db."' || $1 || '" (' || 
         string_agg(
-          column_name || ' ' || 
+          quote_ident(column_name) || ' ' || 
           CASE 
             WHEN data_type = 'USER-DEFINED' THEN 'text'
             ELSE data_type 
@@ -109,7 +110,7 @@ async function insertData(table: string, data: any[]) {
     console.log(`🔹 Inserting data for ${table}...`);
     
     for (const row of data) {
-      const columns = Object.keys(row).join(', ');
+      const columns = Object.keys(row).map(col => quote_ident(col)).join(', ');
       const values = Object.values(row);
       const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
       
@@ -136,6 +137,11 @@ async function enableConstraints(table: string) {
     console.error(`❌ Error re-enabling constraints for ${table}:`, error);
     throw error; // Re-throw to stop migration on error
   }
+}
+
+// Helper function to properly quote identifiers
+function quote_ident(identifier: string) {
+  return `"${identifier}"`;
 }
 
 // Migrate tables with constraints ignored

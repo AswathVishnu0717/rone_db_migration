@@ -11,6 +11,7 @@ export async function migrateChargerPoints() {
 
     const { rows: chargers } = await sourceDb.query<ChargerPoint>(sourceQuery);
 
+    // await targetDb.query('TRUNCATE TABLE asset_db.saev_charge_point CASCADE');
     console.log(`Fetched ${chargers.length} records. Starting migration...`);
 
     // Track seen charge point IDs

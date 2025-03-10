@@ -101,3 +101,52 @@ export interface Users{
     created_at:Date|null,
     updated_at:Date|null
 }
+export interface MasterCharger {
+    id: number;
+    oem: string | null;
+    model_name: string;
+    charger_type: string;
+    peak_power: number;
+    dc_output_current: number | null;
+    dc_output_voltage: number | null;
+    ac_input_current: number | null;
+    ac_input_voltage: number | null;
+    no_of_connectors: number | null;
+    created_by: number | null;
+    updated_by: number | null;
+    created_at: Date | null;
+    updated_at: Date | null;
+    is_deleted: boolean | null;
+    oltp_id: number | null;
+    preventive_maintanance: number | null;
+    charger_warranty: number | null;
+}
+export interface MasterConnector {
+    id: number;
+    charger_id: number | null;
+    current_type: string | null;
+    connector_type: string | null;
+    peak_power: number | null;
+    created_by: number | null;
+    updated_by: number | null;
+    created_at: Date | null;
+    updated_at: Date | null;
+    is_deleted: boolean | null;
+    connector_id: number | null;
+    oltp_id: number | null;
+}
+
+
+export interface StationAttachments {
+    id: number;
+    station_id: number | null;
+    type: string;
+    url: string;
+    thumbnail_url: string | null;
+    file_name: string | null;
+    file_type: string | null;
+    file_size: number;
+    key: string;
+    bucket_type: string;
+    created_at: Date;
+}
